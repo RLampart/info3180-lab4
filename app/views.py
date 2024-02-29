@@ -2,9 +2,10 @@ import os
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from flask_login import login_user, logout_user, current_user, login_required
-from werkzeug.utils import secure_filename,check_password_hash
+from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from app.models import UserProfile
-from app.forms import LoginForm
+from app.forms import LoginForm, UploadForm
 
 
 ###
@@ -24,17 +25,21 @@ def about():
 
 
 @app.route('/upload', methods=['POST', 'GET'])
+@login_required
 def upload():
     # Instantiate your form class
-
+    form = UploadForm()
     # Validate file upload on submit
-    if form.validate_on_submit():
+    if request.method == 'POST':
+       if form.validate_on_submit():
         # Get file data and save to your uploads folder
+          photo = form.photo.data # we could also use request.files['photo']
+          filename = secure_filename(photo.filename)
+          photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+          flash('File Saved', 'success')
+          return redirect(url_for('home')) # Update this to redirect the user to a route that displays all uploaded image files
 
-        flash('File Saved', 'success')
-        return redirect(url_for('home')) # Update this to redirect the user to a route that displays all uploaded image files
-
-    return render_template('upload.html')
+    return render_template('upload.html', form = form, methods=['GET'])
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -53,8 +58,7 @@ def login():
         # Then store the result of that query to a `user` variable so it can be
         # passed to the login_user() method below.
         user = db.session.execute(db.select(UserProfile).filter_by(username=username)).scalar()
-        for person in user:
-            if check_password_hash(person.password,password):
+        if user is not None and check_password_hash(user.password,password):
         # Gets user id, load into session
                login_user(user)
                flash('You have been logged in', 'success')
