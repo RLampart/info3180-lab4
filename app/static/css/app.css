@@ -18,3 +18,17 @@ body {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+
+ul.images{
+    list-style-type: none;
+    display: grid;
+    justify-content: center;
+    grid-template-columns: 30% 30% 30%;
+    row-gap: 10px;
+}
+
+li > img{
+    max-width: 250px;
+    justify-self: center;
+    align-self: center;
+}
