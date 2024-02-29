@@ -50,6 +50,12 @@ def upload():
 
     return render_template('upload.html', form = form, methods=['GET'])
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out', 'success')
+    return redirect(url_for('home'))
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
